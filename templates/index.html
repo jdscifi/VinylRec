@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <title>VinylRec</title>
+      <!--suppress CssUnknownTarget -->
+    <style>
+          * {margin:0;padding: 0;}
+          .fullpage{
+              background: rgba(0, 0, 0, 0.6) url("{{url_for('static', filename='banner_1.jpg')}}") no-repeat center;
+              background-size: cover;
+              background-blend-mode: darken;
+              height: 100vh;
+              width: 100vw;
+              text-align: center;
+              margin:0;
+              padding:0;
+          }
+          .overlay-cf{
+            height: 100vh;
+            width: 100vw;
+            background-color: black;
+            margin: 0;
+            margin-top:-100vh;
+            padding: 0;
+          }
+
+          input[type=text] {
+  padding: 15px;
+  font-size: 17px;
+  border: none;
+  float: left;
+  width: 50%;
+  background: white;
+}
+
+ input[type=text]:hover {
+  background: #f1f1f1;
+}  button {
+
+  float: left;
+  width: 10%;
+            
+  padding: 15px;
+  background: #ddd;
+  font-size: 17px;
+  border: none;
+  cursor: pointer;
+}
+
+   .centered {
+     width:50vw;
+  position: fixed; /* or absolute */
+  top: 50%;
+  left: 50%;
+  /* bring your own prefixes */
+  transform: translate(-50%, -50%);
+}
+
+ button:hover {
+  background: #bbb;
+}
+      </style>
+  </head>
+  <body>
+    <div class="fullpage justify-content-center align-content-center align-items-center">
+      <div class="centered">
+        <form action="/likability">
+          <input type="text" placeholder="Search.." name="search">
+          <button type="submit"><i class="fa fa-search"></i></button>
+        </form>
+      </div>
+    </div>
+
+
+  </body>
+</html>
