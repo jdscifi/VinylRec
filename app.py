@@ -14,33 +14,16 @@ json_path = "models/final_model.json"
 h5_path = "models/final_model.h5"
 
 spot = Spotify()
-data = spot.get_playlist_metadata("4jlbTgG7gqClTD2MjpUDqI")
-data.to_csv("datsssa____.csv")
 
 
 def load_model():
     try:
-        with open(json_path, 'r') as json_file:
-            loaded_model_json = json_file.read()
-        loaded_model = tf.keras.models.model_from_json(loaded_model_json, custom_objects={'KerasLayer': hub.KerasLayer})
-        loaded_model.load_weights(h5_path)
-        loaded_model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.001, momentum=0.5),
-                             loss=tf.keras.losses.BinaryCrossentropy(), metrics=['accuracy'])
-        return loaded_model
-    except Exception:
-        return False
+        return tf.keras.models.load_model("models/final_model")
+    except Exception as e:
+        return None
 
 
-def spotify_search_track():
-    pass
-
-
-def get_track_metadata(id):
-    pass
-
-
-# image_input = np.array(np.expand_dims(image_input, axis=0), 'float32') / 255
-# return model.predict(image_input, verbose=0)
+model = load_model()
 
 
 @app.route('/')
@@ -48,21 +31,24 @@ def home():
     return render_template("index.html")
 
 
-@app.route('/likability', methods=["POST", "GET"])
+@app.route('/likability', methods=["POST"])
 def predict():
     data = pd.DataFrame()
     try:
         url = request.args.get('search')
+        if url is None:
+            return render_template("index.html")
         if "https://open.spotify.com/playlist/" in url:
             playlist_id = url.replace("https://open.spotify.com/playlist/", "")
             data = spot.get_playlist_metadata(playlist_id)
         elif "https://open.spotify.com/track/" in url:
             track_id = url.replace("https://open.spotify.com/track/", "")
             data = spot.get_track_metadata(track_id)
-        model = load_model()
+
         if len(data) > 0:
-            y_pred = model.predict(data)
-            return render_template("output.html")
+            data['value'] = model.predict(data.drop(columns=['label']))
+            print(data)
+            return render_template("output.html", data=data[['value', 'label']].to_dict())
         return render_template("error.html", error_message="No tracks found!")
     except ValueError:
         return render_template("index.html")
