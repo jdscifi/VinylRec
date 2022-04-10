@@ -41,14 +41,23 @@ class Spotify():
             return True
         return False
 
-    def get_track_metadata(self, track_id):
+    def get_track_metadata(self, track_id, flag=False):
         if self.timeout < dt.datetime.timestamp(dt.datetime.now()):
             if not self.get_token():
                 raise Exception("Unable to connect to Spotify!")
         headers = {'Content-Type': 'application/json', "Authorization": f"Bearer {self.token}"}
+        label = ""
+        if not flag:
+            response = rq.get(f"https://api.spotify.com/v1/tracks/{track_id}", headers=headers)
+            if response.status_code == 200:
+                label = response.json()["name"]
         response = rq.get(f"https://api.spotify.com/v1/audio-features/{track_id}", headers=headers)
         if response.status_code == 200:
-            return response.json()
+            data = response.json()
+            if not flag:
+                data['label'] = label
+                data = data_prep(data)
+            return data
         else:
             return "unable to get track info"
 
@@ -63,8 +72,9 @@ class Spotify():
         processed_info = pd.json_normalize(df['items'].apply(only_dict).tolist()).add_prefix('items_')
         track_data = []
         for ind, row in processed_info.iterrows():
-            track_data.append(
-                {"song_title": row["items_track.name"], "metadata": self.get_track_metadata(row["items_track.id"])})
+            temp = self.get_track_metadata(row["items_track.id"], True)
+            temp['label'] = row["items_track.name"]
+            track_data.append(temp)
         return data_prep(track_data)
 
 
@@ -82,37 +92,35 @@ def data_prep(data):
         data[f"time_signature_{float(data['time_signature'])}"] = 1
         del data["time_signature"]
         data = [data]
-        dr = pd.DataFrame(data)
+        data = pd.DataFrame(data)
     else:
-        dr = pd.DataFrame(data)
-        dr = pd.concat([dr, pd.get_dummies(dr['key'])], axis=1)
-        dr['time_signature'] = dr['time_signature'].astype(float)
-        dr = pd.concat([dr, pd.get_dummies(dr['time_signature'])], axis=1)
-        dr.drop(columns=['key', 'time_signature'])
-
-    for i in final_params:
-        if i not in dr.columns:
-            print(i)
-            dr[i] = [0] * len(dr)
+        data = pd.DataFrame(data)
+        print(data)
+        data = pd.concat([data, pd.get_dummies(data['key'])], axis=1)
+        data['time_signature'] = data['time_signature'].astype(float)
+        data = pd.concat([data, pd.get_dummies(data['time_signature'])], axis=1)
 
     unwanted_keys = set(data.keys()) - set(initial_parameters)
+    unwanted_keys.remove("label")
+    data.drop(columns=list(unwanted_keys), inplace=True)
 
-    for i in unwanted_keys:
-        del data[i]
+    for i in final_params:
+        if i not in data.columns:
+            data[i] = [0] * len(data)
 
-    print(set(dr.columns) - set(final_params))
+    return data
 
 
 def only_dict(d):
     try:
-        ev = ast.literal_eval(str(d).replace("None",'\"None\"').replace("True",'\"True\"').replace("False",'\"False\"'))
-        return ev
+        evaluated_json = ast.literal_eval(
+            str(d).replace("None", '\"None\"').replace("True", '\"True\"').replace("False", '\"False\"'))
+        return evaluated_json
     except ValueError:
         corrected = "\'" + str(d).replace("None", '\"None\"').replace("True", '\"True\"').replace("False",
                                                                                                   '\"False\"') + "\'"
-        ev = ast.literal_eval(corrected)
-        return ev
-    # return ast.literal_eval(d)
+        evaluated_json = ast.literal_eval(corrected)
+        return evaluated_json
 
 
 """def search_track(query_string=""):
