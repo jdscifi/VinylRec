@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <title>Crop Counsellor</title>
       <style>
+
           * {margin:0;padding: 0;}
           .fullpage{
               background-image: url("{{url_for('static', filename='banner_1.jpg')}}");
@@ -18,12 +19,68 @@
               margin:0;
               padding:0;
           }
+          #bubbles {
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+}
       </style>
+    <script>
+      var nodes = new vis.DataSet([
+  {label: "Pop"},
+  {label: "Alternative"},
+  {label: "Rock"},
+  {label: "Jazz"},
+  {label: "Hits"},
+  {label: "Dance"},
+  {label: "Metal"},
+  {label: "Experimental"},
+  {label: "Rap"},
+  {label: "Electronic"},
+]);
+      try {
+    window.vis = require('vis-network/standalone');
+} catch (e) {
+    console.error(e);
+}
+var edges = new vis.DataSet();
+
+var container = document.getElementById('bubbles');
+var data = {
+  nodes: nodes,
+  edges: edges
+};
+
+var options = {
+  nodes: {borderWidth:0,shape:"circle",color:{background:'#F92C55', highlight:{background:'#F92C55', border: '#F92C55'}},font:{color:'#fff'}},
+  physics: {
+    stabilization: false,
+    minVelocity:  0.01,
+    solver: "repulsion",
+    repulsion: {
+      nodeDistance: 40
+    }
+  }
+};
+var network = new vis.Network(container, data, options);
+
+
+// Events
+network.on("click", function(e) {
+  if (e.nodes.length) {
+    var node = nodes.get(e.nodes[0]);
+    // Do something
+    nodes.update(node);
+  }
+});
+    </script>
   </head>
   <body>
   <div class="fullpage justify-content-center align-content-center align-items-center">
     <div class="overlay-content">
-
+      <div id="bubbles"></div>
     </div>
   </div>
   </body>
