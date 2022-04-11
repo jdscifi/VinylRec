@@ -56,6 +56,7 @@ def predict():
        'time_signature_1.0', 'time_signature_3.0', 'time_signature_4.0',
        'time_signature_5.0']])
             data['level'] = data['size'] = y_pred * 100
+            data = data[data['size'] > 70.00]
             data['label'] = data['label'] + "\n" + data['size'].apply(lambda x: str(int(x))) + "% Love Score"
             return render_template("output.html", data=data[['level', 'size', 'label']].to_dict("records"))
         return redirect(url_for("home"))
