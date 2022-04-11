@@ -3,8 +3,7 @@ import os
 import pandas as pd
 import tensorflow as tf
 from spotify_tasks import Spotify
-import tensorflow_hub as hub
-from flask import Flask, render_template, request, flash, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 tf.get_logger().setLevel('ERROR')
