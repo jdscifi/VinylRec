@@ -85,7 +85,6 @@ def data_prep(data):
                     'time_signature_3.0', 'time_signature_4.0', 'time_signature_5.0']
     initial_parameters = ["acousticness", "danceability", "duration_ms", "energy", "instrumentalness", "key",
                           "liveness", "loudness", "mode", "speechiness", "tempo", "time_signature", "valence"]
-
     if isinstance(data, dict):
         data[f"key_{data['key']}"] = 1
         del data["key"]
@@ -100,13 +99,14 @@ def data_prep(data):
         data['time_signature'] = data['time_signature'].astype(float)
         data = pd.concat([data, pd.get_dummies(data['time_signature'])], axis=1)
 
-    unwanted_keys = set(data.keys()) - set(initial_parameters)
+    unwanted_keys = set(data.keys()) - set(final_params)
     unwanted_keys.remove("label")
     data.drop(columns=list(unwanted_keys), inplace=True)
 
     for i in final_params:
         if i not in data.columns:
             data[i] = [0] * len(data)
+    # print(data.columns)
 
     return data
 
